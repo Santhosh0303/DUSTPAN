@@ -263,7 +263,7 @@ def _resolve_destination(raw: str) -> str:
     uses the single value this returns.
     """
     absolute = os.path.abspath(os.path.expanduser(raw))
-    return os.path.normcase(os.path.realpath(absolute))
+    return os.path.realpath(absolute)
 
 
 def _write_outputs(
@@ -286,12 +286,13 @@ def _write_outputs(
 
     from dustpan.output import writers
 
-    sources = _scanned_sources(estate)
+    sources = {os.path.normcase(p) for p in _scanned_sources(estate)}
     protected_roots = _protected_roots(estate)
     seen: dict[str, str] = {}
 
     for target, raw, label in requested:
-        if target in sources or os.path.realpath(target) in sources:
+        identity = os.path.normcase(target)
+        if identity in sources or os.path.normcase(os.path.realpath(target)) in sources:
             print(
                 f"dustpan: refusing to write {label} to {raw}\n"
                 "         -- that file is a source this scan discovered. dustpan\n"
@@ -317,9 +318,9 @@ def _write_outputs(
                 file=sys.stderr,
             )
             return [], True
-        if target in seen:
+        if identity in seen:
             print(
-                f"dustpan: {label} and {seen[target]} both resolve to {target}\n"
+                f"dustpan: {label} and {seen[identity]} both resolve to {target}\n"
                 "         -- refusing to let one output silently replace the other.",
                 file=sys.stderr,
             )
@@ -330,7 +331,7 @@ def _write_outputs(
                 file=sys.stderr,
             )
             return [], True
-        seen[target] = label
+        seen[identity] = label
 
     rendered: list[tuple[str, str]] = []
     for target, _raw, label in requested:
@@ -374,7 +375,8 @@ _STATE_WORDS = {
 
 
 def _under(target: str, root: str) -> bool:
-    root = os.path.abspath(root)
+    target = os.path.normcase(os.path.abspath(target))
+    root = os.path.normcase(os.path.abspath(root))
     return target == root or target.startswith(root.rstrip(os.sep) + os.sep)
 
 

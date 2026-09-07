@@ -100,9 +100,11 @@ Renderers decide actionability from the raw estate before making display copies.
 POSIX reads use no-follow descriptor traversal including the root, verify root
 identity at open, refuse non-regular files, and diagnose files changed during a
 bounded read. This does not promise a transactionally consistent snapshot of a
-whole actively changing directory tree. On platforms without these primitives,
-path-based reads emit material degradation and require trusted immutable inputs;
-Windows acceptance remains a separate, pending execution gate.
+whole actively changing directory tree. Windows local-disk reads hold ancestor
+handles without write/delete sharing through file opening, reject every reparse
+point, and transfer the final no-write/no-delete handle to a binary descriptor.
+UNC paths and alternate streams are refused. Other platforms without guarded
+reads emit material degradation. Windows acceptance requires its native CI gates.
 
 Output aliases are rejected before staging. Each destination is replaced
 atomically after staging and fsync. Existing bytes are copied into exclusive

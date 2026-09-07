@@ -591,10 +591,8 @@ def commit_all(pairs: list[tuple[str, str]]) -> dict[str, str]:
       is individually old or new; they are not guaranteed to be all-old or
       all-new. That boundary is stated in CONTRACT.md rather than papered over.
     """
-    resolved = [
-        (os.path.normcase(os.path.realpath(os.path.expanduser(p))), t) for p, t in pairs
-    ]
-    if len({path for path, _ in resolved}) != len(resolved):
+    resolved = [(os.path.realpath(os.path.expanduser(p)), t) for p, t in pairs]
+    if len({os.path.normcase(path) for path, _ in resolved}) != len(resolved):
         raise OSError("multiple outputs resolve to the same destination")
     existed = {path: os.path.exists(path) for path, _ in resolved}
 

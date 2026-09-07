@@ -252,10 +252,15 @@ def test_overwriting_preserves_the_existing_permission_bits(tmp_path):
     out = tmp_path / "report.json"
     out.write_text("x\n")
     out.chmod(0o644)
+    # Windows chmod exposes the writable/read-only attribute, not POSIX
+    # group/other bits. Verify preservation of the actual pre-write mode.
+    original_mode = out.stat().st_mode
+    if os.name != "nt":
+        assert oct(original_mode)[-3:] == "644"
 
     main(["scan", str(tmp_path / "fx"), "--json", str(out), "--force", "--quiet"])
 
-    assert oct(out.stat().st_mode)[-3:] == "644"
+    assert out.stat().st_mode == original_mode
 
 
 # --------------------------------------------------------------------------

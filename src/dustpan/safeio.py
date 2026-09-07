@@ -46,10 +46,11 @@ __all__ = [
     "was_read",
 ]
 
-#: True when this platform can enforce descriptor-bound containment. POSIX
-#: gives us O_NOFOLLOW and dir_fd; Windows does not, and pretending otherwise
-#: would be the silent fallback the audit warned against.
-STRICT_CONTAINMENT = hasattr(os, "O_NOFOLLOW") and os.open in os.supports_dir_fd
+#: POSIX uses O_NOFOLLOW/dir_fd. Windows uses the explicit no-reparse
+#: handle traversal in windows_io, not a path-only fallback.
+STRICT_CONTAINMENT = os.name == "nt" or (
+    hasattr(os, "O_NOFOLLOW") and os.open in os.supports_dir_fd
+)
 
 _DEGRADED_PLATFORM_NOTE = (
     "safeio: this platform cannot enforce descriptor-bound containment "
@@ -228,6 +229,13 @@ def _open_contained(path: str, root: str | None) -> int:
     # descriptor must return physical bytes for fstat size checks to be valid.
     flags = os.O_RDONLY | getattr(os, "O_NONBLOCK", 0) | getattr(os, "O_BINARY", 0)
 
+    if os.name == "nt":
+        from dustpan.windows_io import open_guarded
+
+        if root and not _within(os.path.realpath(absolute), root):
+            raise _Refused(f"refused '{path}' -- outside the scan root")
+        return open_guarded(absolute)
+
     if not STRICT_CONTAINMENT:
         # Documented degraded path: the note above has already been recorded.
         real = os.path.realpath(absolute)
@@ -292,7 +300,8 @@ def _open_contained(path: str, root: str | None) -> int:
 
 
 def _within(candidate: str, root: str) -> bool:
-    real_root = os.path.realpath(root)
+    real_root = os.path.normcase(os.path.realpath(root))
+    candidate = os.path.normcase(candidate)
     return candidate == real_root or candidate.startswith(
         real_root.rstrip(os.sep) + os.sep
     )

@@ -163,9 +163,11 @@ work (AUD-V3-025).
 
 The runtime uses only Python's standard library. On POSIX systems supporting
 `O_NOFOLLOW` and descriptor-relative opens, reads enforce descriptor-bound
-containment. Windows uses path-based checks and emits a material degradation
-note, withholding proven-retirement advice. Treat input trees as trusted and
-immutable there. Windows behavior and acceptance remain pending execution.
+containment. Windows local-disk reads use native handles, reject reparse points
+and alternate streams, and deny write/delete sharing while opening and reading
+files. UNC/network paths are currently refused. No platform promises a consistent
+snapshot of an actively changing estate. Consult the current Windows CI results
+before relying on a release candidate.
 
 ## Use
 
@@ -497,10 +499,9 @@ builds both artifacts and tests *them* rather than the checkout -- the sdist
 by running its own bundled tests, the wheel by installing it offline into a
 fresh venv.
 
-Windows has not yet been executed anywhere: it is a stated target, every
-result so far is from Linux, and a green Linux run is not evidence about
-`os.path` behaviour, path separators or console encoding on Windows. Treat
-the first Windows CI run as the real gate.
+Windows runs execute the six native test modules and six additional handle-boundary
+probes on real GitHub Windows runners. Linux success is not evidence of Windows
+success: both Windows jobs must pass at the exact release commit.
 
 
 ## Re-running the adversarial audit
