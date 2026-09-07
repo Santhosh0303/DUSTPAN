@@ -53,7 +53,7 @@ jobs:
       - name: Bounded stress workloads
         if: ${{ !cancelled() && runner.os == 'Linux' }}
         run: python tools/stress.py --json audit-results/stress.json --timeout 30
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: audit-matrix-${{ matrix.os }}-py${{ matrix.python-version }}
@@ -116,7 +116,7 @@ jobs:
           bash release.sh HEAD dist/dustpan-0.1.2-source.zip
           cd dist
           sha256sum *.whl *.tar.gz *.zip > SHA256SUMS
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: distribution-candidates
           path: dist/*
