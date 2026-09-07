@@ -41,7 +41,7 @@ dev = [
   "ruff>=0.15,<0.16",
   # AUD-V3-010 asks for rendered-node assertions rather than regex matching.
   # DEV/TEST ONLY -- the runtime stays standard-library-only.
-  "markdown-it-py>=3,<4",
+  "markdown-it-py>=4.2.0,<5",
   # AUD-V3-017: the audit matrix runs `python -m build`, so the frontend is
   # declared here rather than assumed to be present from another CI job.
   "build>=1.2,<2",
