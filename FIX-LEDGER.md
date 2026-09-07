@@ -7,8 +7,9 @@ The immutable prior final audit remains a historical NO-GO for 0.1.1.
 ## Authorized repair scope
 
 The user authorized fixes for F01–F09 and explicitly deferred native and
-Windows acceptance. This candidate is 0.1.2 to distinguish changed bytes;
-GitHub tag availability and publication are still pending.
+Windows acceptance during the local repair phase. The user subsequently authorized
+real GitHub Windows/native execution and fixes for the resulting failures.
+This candidate is 0.1.2; GitHub tag publication is still a separate action.
 
 | Finding | Implemented repair | Evidence |
 | --- | --- | --- |
@@ -25,7 +26,25 @@ GitHub tag availability and publication are still pending.
 The six repaired-boundary checks have passed. Ruff and strict mypy have passed.
 Complete candidate matrix/artifact receipts accompany the repair handoff.
 Do not interpret implemented fixes as Windows/native acceptance or publication
-approval. Those gates remain deferred, including native-dependent matrix cases.
+approval. Current execution evidence is the Actions run at the exact candidate
+commit; the earlier local deferrals are historical, not the current CI setup.
+
+## GitHub acceptance repairs
+
+- Require pytest >=9.0.3,<10 after the dependency audit flagged the older range.
+- Finalize sdists with deterministic tar/gzip metadata while verifying every
+  payload is unchanged. Compare two independent builds of the final artifacts.
+- Use binary file descriptors on Windows, avoiding CRLF/Ctrl-Z translation.
+- Add Windows no-reparse ancestor traversal and file handles denying write/delete
+  sharing. Six real Windows probes cover bytes, write/replace locking, final and
+  directory reparse rejection, and clean guarded-read behavior.
+- Preserve destination case for writes/display; use normalized case for collision
+  and source-containment identities only.
+- Check actual pre/post mode preservation on Windows; retain the explicit POSIX
+  0644 expectation where the platform represents those bits.
+- Run the two matrix scripts explicitly, and retain boundary/stress receipts even
+  if an earlier gate fails. Publish candidate archives with SHA256SUMS as CI
+  artifacts, not as an approved release before every required gate passes.
 
 ## Immutable action references
 
