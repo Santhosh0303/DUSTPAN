@@ -44,7 +44,7 @@ dev = [
   "markdown-it-py>=3,<4",
   # AUD-V3-017: the audit matrix runs `python -m build`, so the frontend is
   # declared here rather than assumed to be present from another CI job.
-  "build>=1.2,<2",
+  "build>=1.6.0,<2",
 ]
 
 [build-system]
