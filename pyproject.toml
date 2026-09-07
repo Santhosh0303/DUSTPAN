@@ -1,0 +1,93 @@
+[project]
+name = "dustpan"
+version = "0.1.2"
+description = "Subtractive analysis for BI estates: finds duplicate, unused and drifting metric definitions."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+license = "LicenseRef-Proprietary"
+license-files = ["LICENSE"]
+authors = [{ name = "Santhosh Bellam" }]
+keywords = ["power-bi", "tmdl", "dax", "semantic-model", "governance", "bi"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Information Technology",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Database",
+  "Typing :: Typed",
+]
+
+[project.urls]
+Source = "https://github.com/Santhosh0303/dustpan"
+Issues = "https://github.com/Santhosh0303/dustpan/issues"
+
+[project.scripts]
+dustpan = "dustpan.cli:main"
+
+[project.optional-dependencies]
+# AUD-V1-011: `ruff>=0.6` meant the CI gate's rule set changed whenever a new
+# ruff shipped -- the v1 audit's ruff 0.16.5 reported 58 violations against a
+# tree that was clean on the version used to write it. Dev tools that gate CI
+# are pinned to bounded ranges so the gate is reproducible.
+dev = [
+  "pytest>=8,<9",
+  "pytest-cov>=5,<7",
+  "mypy>=1.11,<2",
+  "ruff>=0.15,<0.16",
+  # AUD-V3-010 asks for rendered-node assertions rather than regex matching.
+  # DEV/TEST ONLY -- the runtime stays standard-library-only.
+  "markdown-it-py>=3,<4",
+  # AUD-V3-017: the audit matrix runs `python -m build`, so the frontend is
+  # declared here rather than assumed to be present from another CI job.
+  "build>=1.2,<2",
+]
+
+[build-system]
+# AUD-V3-023: this project declares an SPDX license expression and
+# project.license-files. Both artifacts were built with exactly 77.0.3.
+# Permitting an older backend could reject this metadata.
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+dustpan = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.mypy]
+python_version = "3.11"
+namespace_packages = true
+mypy_path = "src"
+
+[tool.ruff]
+line-length = 90
+src = ["src", "tests", "tools"]
+
+[tool.ruff.lint]
+# Selected explicitly rather than inherited from whatever the installed ruff
+# defaults to, so upgrading ruff cannot turn CI red without a config change
+# (AUD-V1-011). Add rules deliberately, not by upgrade.
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "C4", "RUF"]
+# BLE (blind except) is deliberately NOT selected: parsers are contracted
+# never to raise, so they catch broadly on purpose and every such site is a
+# considered decision rather than an oversight. RUF059 flags unused unpacked
+# names, which read better than `_` in the walk loops.
+ignore = ["RUF059"]
+
+[tool.ruff.lint.pycodestyle]
+# The formatter wraps CODE at line-length 90. Prose in docstrings and
+# comments is left where the author put it -- reflowing an explanation to
+# satisfy a column count makes it worse to read, and these files carry a lot
+# of reasoning that is the point of them. E501 therefore has a looser bound
+# than the formatter's target.
+max-line-length = 100

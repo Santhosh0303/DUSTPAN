@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.DS_Store
+*.json.out
+
+# generated packaging metadata -- never source truth (AUD-019)
+src/*.egg-info/
+
+# release archives are built by release.sh, never committed
+dustpan-*.zip
+!tests/audit_baseline/dustpan-v3.zip

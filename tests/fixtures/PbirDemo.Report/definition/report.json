@@ -1,0 +1,38 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/1.0.0/schema.json",
+  "themeCollection": { "baseTheme": { "name": "CY24SU10", "type": "SharedResources" } },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "reportFilter1",
+        "type": "Advanced",
+        "field": {
+          "Measure": {
+            "Expression": { "SourceRef": { "Entity": "Sales" } },
+            "Property": "Gross Margin"
+          }
+        },
+        "filter": {
+          "Version": 2,
+          "From": [ { "Name": "s", "Entity": "Sales", "Type": 0 } ],
+          "Where": [
+            {
+              "Condition": {
+                "Comparison": {
+                  "ComparisonKind": 2,
+                  "Left": {
+                    "Measure": {
+                      "Expression": { "SourceRef": { "Source": "s" } },
+                      "Property": "Gross Margin"
+                    }
+                  },
+                  "Right": { "Literal": { "Value": "0D" } }
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

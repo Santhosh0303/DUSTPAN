@@ -1,0 +1,14 @@
+{
+  "config": "{}",
+  "sections": [
+    {
+      "name": "ReportSection1",
+      "displayName": "Overview",
+      "visualContainers": [
+        {"config": "{\"name\":\"v1\",\"singleVisual\":{\"visualType\":\"card\",\"projections\":{\"Values\":[{\"queryRef\":\"Sales.Total Sales\"}]}}}"},
+        {"config": "{\"name\":\"v2\",\"singleVisual\":{\"visualType\":\"barChart\",\"projections\":{\"Y\":[{\"queryRef\":\"Sales.Revenue\"}],\"Category\":[{\"queryRef\":\"Sales.Region\"}]}}}"},
+        {"config": "{\"name\":\"v3\",\"singleVisual\":{\"visualType\":\"card\",\"projections\":{\"Values\":[{\"queryRef\":\"Sales.Order Count\"}]}}}"}
+      ]
+    }
+  ]
+}

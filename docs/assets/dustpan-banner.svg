@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="400" viewBox="0 0 1280 400" role="img" aria-labelledby="title desc">
+  <title id="title">DUSTPAN</title>
+  <desc id="desc">Less clutter. More confidence. Conservative static analysis for Power BI estates.</desc>
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#060b17"/><stop offset="1" stop-color="#14233e"/></linearGradient>
+    <linearGradient id="line"><stop stop-color="#69f7d0"/><stop offset="1" stop-color="#879dff"/></linearGradient>
+  </defs>
+  <rect width="1280" height="400" rx="24" fill="url(#bg)"/>
+  <g stroke="#23344f" fill="none"><path d="M800 0v400M880 0v400M960 0v400M1040 0v400M1120 0v400M1200 0v400M760 80h520M760 160h520M760 240h520M760 320h520"/></g>
+  <circle cx="1050" cy="200" r="124" fill="none" stroke="#69f7d0" stroke-opacity=".25"/>
+  <circle cx="1050" cy="200" r="88" fill="none" stroke="#879dff" stroke-opacity=".5"/>
+  <path d="M999 202l33 33 69-75" fill="none" stroke="url(#line)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="70" y="88" fill="#69f7d0" font-family="sans-serif" font-size="15" letter-spacing="5">POWER BI / STATIC ANALYSIS</text>
+  <text x="65" y="202" fill="#f2f6ff" font-family="sans-serif" font-size="92" font-weight="800" letter-spacing="8">DUSTPAN</text>
+  <text x="70" y="264" fill="#d4dfef" font-family="sans-serif" font-size="30">Less clutter. More confidence.</text>
+  <path d="M70 303h630" stroke="url(#line)" stroke-width="2"/>
+  <text x="70" y="348" fill="#9eafc8" font-family="sans-serif" font-size="17">SCAN LOCALLY. SURFACE EVIDENCE. REVIEW DELIBERATELY.</text>
+</svg>

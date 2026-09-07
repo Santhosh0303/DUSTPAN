@@ -1,0 +1,43 @@
+table Sales
+
+	measure 'Total Sales' = SUM ( Sales[Amount] )
+		formatString: #,0.00
+		displayFolder: Core
+
+	measure 'Sales Total' = SUM(Sales[Amount])
+		formatString: #,0.00
+		displayFolder: Legacy
+
+	/// Duplicate created during the 2024 migration
+	measure 'Sum of Sales' =
+			SUM (
+				'Sales'[Amount]
+			)
+		formatString: #,0.00
+		displayFolder: Legacy
+
+	measure 'Total Sales UK' = CALCULATE ( SUM ( Sales[Amount] ), Sales[Region] = "UK" )
+		displayFolder: Regional
+
+	measure 'Revenue' = SUMX ( Sales, Sales[Amount] )
+		displayFolder: Core
+
+	measure 'Order Count' = COUNTROWS ( Sales )
+
+	measure 'Orphan Measure' = DISTINCTCOUNT ( Sales[OrderId] )
+		displayFolder: Unused
+
+	column Amount
+		dataType: decimal
+		summarizeBy: sum
+		sourceColumn: Amount
+
+	column Region
+		dataType: string
+		summarizeBy: none
+		sourceColumn: Region
+
+	column OrderId
+		dataType: string
+		summarizeBy: none
+		sourceColumn: OrderId

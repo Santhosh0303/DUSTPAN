@@ -1,0 +1,13 @@
+# AUD-012: the sdist shipped tests/test_*.py but neither conftest.py nor any
+# fixture, so `pytest` from an extracted sdist failed to collect. If the
+# artifact carries tests, it must carry everything they need to run.
+include README.md CONTRACT.md LICENSE FIX-LEDGER.md
+# AUD-V3-022: the README tells users to run tools/audit_matrix.py, so the
+# sdist has to contain it. Test tooling belongs in source artifacts; the
+# wheel stays lean.
+recursive-include tools *.py
+recursive-include tests/audit_baseline *.zip
+recursive-include docs *.md
+include src/dustpan/py.typed
+recursive-include tests *.py *.tmdl *.json *.pbism *.pbir
+global-exclude __pycache__ *.py[cod]

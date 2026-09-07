@@ -1,0 +1,96 @@
+# Action commits verified against upstream tags on 2026-09-05.
+# Dependabot maintains these immutable pins.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # The audit's re-release gate: Windows and Linux, 3.11 and 3.12. Windows is
+  # a stated target and had never been executed, so a green Linux run was
+  # never evidence the tool worked where its users actually are.
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.11", "3.12"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      # AUD-V3-017: the audit matrix run below executes `python -m build`,
+      # so the frontend is declared in the [dev] extra rather than assumed
+      # to be present from the separate artifacts job. Jobs do not share
+      # installed packages.
+      - run: python -m pip install -e ".[dev]"
+      - run: python -m pip list
+      - run: python -m pytest -q
+      - name: CLI smoke test
+        run: python -m dustpan.cli scan tests/fixtures --quiet
+
+      # Both adversarial Edge/OAT matrices, executable. A
+      # finding only ever checked by hand comes back; this fails the build if
+      # any case regresses, and SKIP counts as failure so a missing tool can
+      # never be mistaken for a pass.
+      - name: Both adversarial matrices (80 cases)
+        if: runner.os == 'Linux'
+        run: python tools/run_matrices.py --out-dir audit-results
+      - name: Repaired safety boundaries
+        if: runner.os == 'Linux'
+        run: python tools/boundary_regressions.py --json audit-results/boundaries.json
+      - name: Bounded stress workloads
+        if: runner.os == 'Linux'
+        run: python tools/stress.py --json audit-results/stress.json --timeout 30
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: audit-matrix-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: audit-results/*.json
+
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      # Dev tools come from the pinned ranges in pyproject's [dev] extra, so
+      # this gate cannot go red because a new linter shipped (AUD-V1-011).
+      - run: python -m pip install -e ".[dev]"
+      # AUD-V3-018: invoke every tool through the job's interpreter so the
+      # command is identical on Windows, where venv executables live under
+      # Scripts rather than bin.
+      - run: python -m ruff --version
+      - run: python -m ruff check src tests tools
+      - run: python -m ruff format --check src tests tools
+      - run: python -m mypy --strict --namespace-packages -p dustpan
+        env:
+          MYPYPATH: src
+
+  # AUD-012: build the artifacts and test THEM, not the checkout. The sdist
+  # used to ship tests it could not run, and nothing noticed because CI only
+  # ever tested the working tree.
+  artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -e ".[dev]"
+      - run: python -m build
+      - name: sdist runs its own tests
+        run: |
+          mkdir -p /tmp/sdist && tar xzf dist/*.tar.gz -C /tmp/sdist --strip-components=1
+          cd /tmp/sdist && python -m pip install pytest && python -m pytest -q
+      - name: wheel installs offline and runs
+        run: |
+          python -m venv /tmp/venv
+          /tmp/venv/bin/pip install --no-index dist/*.whl
+          /tmp/venv/bin/dustpan version

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/bookmark/1.0.0/schema.json",
+  "name": "bm1",
+  "displayName": "High value only",
+  "explorationState": {
+    "activeSection": "Summary",
+    "filters": [
+      {
+        "name": "bookmarkFilter1",
+        "type": "Advanced",
+        "field": {
+          "Measure": {
+            "Expression": { "SourceRef": { "Entity": "Sales" } },
+            "Property": "Bookmarked Measure"
+          }
+        }
+      }
+    ]
+  }
+}
