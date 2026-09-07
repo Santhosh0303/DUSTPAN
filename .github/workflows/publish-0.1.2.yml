@@ -1,0 +1,101 @@
+name: publish-0.1.2
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/publish-0.1.2.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: publish-dustpan-0.1.2
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      actions: read
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: Santhosh0303/DUSTPAN
+      TARGET_SHA: ee90131f9ef908e703ac6eb0ac9762a48f5ff9d5
+    steps:
+      - name: Verify exact release commit passed both workflows
+        shell: bash
+        run: |
+          set -euo pipefail
+          for run in 34117369891 34117369653; do
+            gh api "repos/$GH_REPO/actions/runs/$run" > "run-$run.json"
+            jq -e --arg sha "$TARGET_SHA" '.head_sha == $sha and .status == "completed" and .conclusion == "success" and .event == "push"' "run-$run.json"
+          done
+      - name: Download tested artifacts and independently reproduced hashes
+        run: |
+          gh run download 34117369891 --repo "$GH_REPO" --name distribution-candidates --dir candidate
+          gh run download 34117369653 --repo "$GH_REPO" --name reproducibility --dir reproduced
+      - name: Verify checksums and build provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          from pathlib import Path
+          candidate = Path("candidate")
+          expected = {"dustpan-0.1.2-py3-none-any.whl", "dustpan-0.1.2-source.zip", "dustpan-0.1.2.tar.gz"}
+          files = {p.name for p in candidate.iterdir() if p.is_file()}
+          assert files == expected | {"SHA256SUMS"}, files
+          sums = {}
+          for line in (candidate / "SHA256SUMS").read_text().splitlines():
+              digest, name = line.split()
+              assert name in expected and name not in sums, name
+              assert hashlib.sha256((candidate / name).read_bytes()).hexdigest() == digest, name
+              sums[name] = digest
+          assert set(sums) == expected
+          receipts = list(Path("reproduced").rglob("reproducibility-sha256.txt"))
+          assert len(receipts) == 1, receipts
+          reproduced = {}
+          for line in receipts[0].read_text().splitlines():
+              digest, path = line.split()
+              name = Path(path).name
+              assert sums[name] == digest, ("independent build mismatch", name)
+              reproduced[name] = digest
+          assert set(reproduced) == {"dustpan-0.1.2-py3-none-any.whl", "dustpan-0.1.2.tar.gz"}
+          print("All candidate checksums verified; wheel and sdist match independent builds.")
+          PY
+      - name: Tag verified commit and publish tested alpha assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          if existing=$(gh api "repos/$GH_REPO/git/ref/tags/v0.1.2" --jq '.object.sha' 2>/dev/null); then
+            test "$existing" = "$TARGET_SHA"
+          else
+            gh api --method POST "repos/$GH_REPO/git/refs" -f ref=refs/tags/v0.1.2 -f sha="$TARGET_SHA"
+          fi
+          cat > notes.md <<'NOTES'
+          Dustpan 0.1.2 is an alpha release for local Power BI estate analysis.
+          
+          Verified commit: ee90131f9ef908e703ac6eb0ac9762a48f5ff9d5.
+          
+          Validation:
+          - 290 native tests on Windows and Linux, Python 3.11 and 3.12.
+          - 80 Edge/OAT cases, six Linux boundary regressions, and 30 stress workloads.
+          - Six native Windows handle-safety probes on both Python versions.
+          - Lint, strict types, package tests, dependency security and reproducibility passed.
+          
+          Assets are the tested CI outputs, not a rebuild. SHA256SUMS accompanies
+          the source ZIP, wheel and canonical source distribution. Wheel and sdist
+          checksums were matched against independently reproduced builds before publishing.
+          
+          Offline installation:
+          python -m pip install --no-index ./dustpan-0.1.2-py3-none-any.whl
+          
+          Scope: local deployments. Windows UNC/network paths, alternate streams
+          and reparse points are refused. No consistent snapshot of an actively
+          changing estate is promised. Findings require human review.
+          
+          CI: https://github.com/Santhosh0303/DUSTPAN/actions/runs/34117369891
+          Release checks: https://github.com/Santhosh0303/DUSTPAN/actions/runs/34117369653
+          NOTES
+          gh release create v0.1.2 candidate/* --repo "$GH_REPO" --verify-tag --target "$TARGET_SHA" --title "Dustpan 0.1.2" --notes-file notes.md --draft --prerelease
+          gh release edit v0.1.2 --repo "$GH_REPO" --draft=false
+          gh release view v0.1.2 --repo "$GH_REPO" --json url,tagName,isDraft,isPrerelease
