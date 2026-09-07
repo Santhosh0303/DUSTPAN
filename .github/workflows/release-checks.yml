@@ -47,6 +47,8 @@ jobs:
           git archive HEAD | tar -x -C /tmp/dustpan-build-b
           python -m build --no-isolation /tmp/dustpan-build-a -o /tmp/dustpan-build-a/dist
           python -m build --no-isolation /tmp/dustpan-build-b -o /tmp/dustpan-build-b/dist
+          python tools/canonical_sdist.py /tmp/dustpan-build-a/dist/*.tar.gz
+          python tools/canonical_sdist.py /tmp/dustpan-build-b/dist/*.tar.gz
           for artifact in /tmp/dustpan-build-a/dist/*; do
             cmp "$artifact" "/tmp/dustpan-build-b/dist/$(basename "$artifact")"
           done

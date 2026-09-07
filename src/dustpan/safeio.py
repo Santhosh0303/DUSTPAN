@@ -224,7 +224,9 @@ def _open_contained(path: str, root: str | None) -> int:
     non-blocking so a FIFO cannot stall before its type has been checked.
     """
     absolute = os.path.abspath(os.path.expanduser(path))
-    flags = os.O_RDONLY | getattr(os, "O_NONBLOCK", 0)
+    # Windows CRT text mode translates CRLF and treats Ctrl-Z as EOF. The
+    # descriptor must return physical bytes for fstat size checks to be valid.
+    flags = os.O_RDONLY | getattr(os, "O_NONBLOCK", 0) | getattr(os, "O_BINARY", 0)
 
     if not STRICT_CONTAINMENT:
         # Documented degraded path: the note above has already been recorded.

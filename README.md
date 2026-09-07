@@ -46,12 +46,17 @@ benchmark of a production estate. Review the findings before changing any model.
 | 30 bounded stress workloads | Dedicated Linux stress receipts |
 | Package integrity | Source distribution tests and offline wheel installation |
 | Dependencies | `pip check`, vulnerability audit, and Dependabot updates |
-| Reproducibility | Two clean builds with fixed tooling and timestamp |
+| Reproducibility | Two clean builds with fixed tooling, timestamp and canonical sdist metadata |
 
 **Read the live Actions results, not this table, as the pass/fail verdict.**
 Configured checks are not completed checks. Failed or pending gates mean the
 release is not approved. POSIX fault-injection probes do not substitute for
 Windows-native tests. Dependabot update runs are separate from test runs.
+
+Release source distributions require `tools/canonical_sdist.py` after building:
+the setuptools backend alone does not make tar/gzip metadata reproducible.
+This stage preserves and verifies every file payload while normalizing archive
+timestamps and owner metadata. Hash or sign only the resulting final archive.
 
 <details>
 <summary><strong>What does a conservative finding mean?</strong></summary>

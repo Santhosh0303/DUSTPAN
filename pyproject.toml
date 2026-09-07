@@ -35,7 +35,7 @@ dustpan = "dustpan.cli:main"
 # tree that was clean on the version used to write it. Dev tools that gate CI
 # are pinned to bounded ranges so the gate is reproducible.
 dev = [
-  "pytest>=8,<9",
+  "pytest>=9.0.3,<10",
   "pytest-cov>=5,<7",
   "mypy>=1.11,<2",
   "ruff>=0.15,<0.16",
