@@ -18,6 +18,9 @@ jobs:
       - run: python -m pip check
       - name: Audit resolved third-party dependencies
         run: python -m pip_audit --skip-editable --format json --output dependency-audit.json
+      - name: Show dependency findings
+        if: ${{ !cancelled() }}
+        run: python -m json.tool dependency-audit.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
@@ -49,7 +52,11 @@ jobs:
           done
           sha256sum /tmp/dustpan-build-a/dist/* > reproducibility-sha256.txt
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: ${{ !cancelled() }}
         with:
           name: reproducibility
-          path: reproducibility-sha256.txt
+          path: |
+            reproducibility-sha256.txt
+            /tmp/dustpan-build-a/dist/*
+            /tmp/dustpan-build-b/dist/*
           if-no-files-found: error

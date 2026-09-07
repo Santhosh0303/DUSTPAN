@@ -40,12 +40,15 @@ jobs:
       # never be mistaken for a pass.
       - name: Both adversarial matrices (80 cases)
         if: runner.os == 'Linux'
-        run: python tools/run_matrices.py --out-dir audit-results
+        run: |
+          mkdir -p audit-results
+          python tools/audit_matrix.py --json audit-results/MATRIX-A.json
+          python tools/matrix_b.py --json audit-results/MATRIX-B.json
       - name: Repaired safety boundaries
-        if: runner.os == 'Linux'
+        if: ${{ !cancelled() && runner.os == 'Linux' }}
         run: python tools/boundary_regressions.py --json audit-results/boundaries.json
       - name: Bounded stress workloads
-        if: runner.os == 'Linux'
+        if: ${{ !cancelled() && runner.os == 'Linux' }}
         run: python tools/stress.py --json audit-results/stress.json --timeout 30
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
