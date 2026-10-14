@@ -21,7 +21,7 @@ jobs:
       - name: Show dependency findings
         if: ${{ !cancelled() }}
         run: python -m json.tool dependency-audit.json
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: dependency-audit
@@ -53,7 +53,7 @@ jobs:
             cmp "$artifact" "/tmp/dustpan-build-b/dist/$(basename "$artifact")"
           done
           sha256sum /tmp/dustpan-build-a/dist/* > reproducibility-sha256.txt
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: ${{ !cancelled() }}
         with:
           name: reproducibility
